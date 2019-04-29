@@ -8,7 +8,7 @@ from cchess_alphazero.config import Config, PlayWithHumanConfig
 
 logger = getLogger(__name__)
 
-CMD_LIST = ['self', 'opt', 'eval', 'play', 'eval', 'sl', 'ob']
+CMD_LIST = ['self', 'opt', 'eval', 'play', 'eval', 'sl', 'ob', 'assist']
 PIECE_STYLE_LIST = ['WOOD', 'POLISH', 'DELICATE']
 BG_STYLE_LIST = ['CANVAS', 'DROPS', 'GREEN', 'QIANHONG', 'SHEET', 'SKELETON', 'WHITE', 'WOOD']
 RANDOM_LIST = ['none', 'small', 'medium', 'large']
@@ -42,7 +42,7 @@ def setup(config: Config, args):
         setup_logger(config.resource.main_log_path)
     elif args.cmd == 'opt':
         setup_logger(config.resource.opt_log_path)
-    elif args.cmd == 'play' or args.cmd == 'ob':
+    elif args.cmd == 'play' or args.cmd == 'ob' or args.cmd == 'assist':
         setup_logger(config.resource.play_log_path)
     elif args.cmd == 'eval':
         setup_logger(config.resource.eval_log_path)
@@ -114,4 +114,12 @@ def start():
         pwhc = PlayWithHumanConfig()
         pwhc.update_play_config(config.play)
         ob_self_play.start(config, args.ucci, args.ai_move_first)
+
+    elif args.cmd == 'assist':
+        config.opts.light = False
+        pwhc = PlayWithHumanConfig()
+        pwhc.update_play_config(config.play)
+        from cchess_alphazero.play_games import assist
+        assist.main(config)
+
         

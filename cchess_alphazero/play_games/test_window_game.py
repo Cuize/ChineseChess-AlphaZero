@@ -11,8 +11,8 @@ from pygame.locals import *
 
 main_dir = os.path.split(os.path.abspath(__file__))[0]
 SCREENRECT = Rect(0, 0, 700, 577)
-PIECE_STYLE = 'POLISH'
-BOARD_STYLE = 'QIANHONG'
+PIECE_STYLE = 'WOOD'
+BOARD_STYLE = 'WOOD'
 
 
 def load_image(file, sub_dir=None):

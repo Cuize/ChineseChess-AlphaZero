@@ -330,4 +330,5 @@ def test_be_catched():
 
 if __name__ == "__main__":
     test_be_catched()
+    test_gui_play()
     

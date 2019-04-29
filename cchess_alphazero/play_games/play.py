@@ -62,6 +62,9 @@ class PlayWithHuman:
     def load_model(self):
         self.model = CChessModel(self.config)
         if self.config.opts.new or not load_best_model_weight(self.model):
+            print('\n')
+            print('build new model')
+            print('\n')
             self.model.build()
 
     def init_screen(self):
@@ -192,55 +195,120 @@ class PlayWithHuman:
         no_act = None
         while not self.env.done:
             if ai_move_first == self.env.red_to_move:
-                labels = ActionLabelsRed
-                labels_n = len(ActionLabelsRed)
-                self.ai.search_results = {}
-                state = self.env.get_state()
-                logger.info(f"state = {state}")
-                _, _, _, check = senv.done(state, need_check=True)
-                if not check and state in self.history[:-1]:
-                    no_act = []
-                    free_move = defaultdict(int)
-                    for i in range(len(self.history) - 1):
-                        if self.history[i] == state:
-                            # 如果走了下一步是将军或捉：禁止走那步
-                            if senv.will_check_or_catch(state, self.history[i+1]):
-                                no_act.append(self.history[i + 1])
-                            # 否则当作闲着处理
-                            else:
-                                free_move[state] += 1
-                                if free_move[state] >= 2:
-                                    # 作和棋处理
-                                    self.env.winner = Winner.draw
-                                    self.env.board.winner = Winner.draw
-                                    break
-                    if no_act:
-                        logger.debug(f"no_act = {no_act}")
-                action, policy = self.ai.action(state, self.env.num_halfmoves, no_act)
-                if action is None:
-                    logger.info("AI has resigned!")
-                    return
-                self.history.append(action)
-                if not self.env.red_to_move:
-                    action = flip_move(action)
-                key = self.env.get_state()
-                p, v = self.ai.debug[key]
-                logger.info(f"check = {check}, NN value = {v:.3f}")
-                self.nn_value = v
-                logger.info("MCTS results:")
-                self.mcts_moves = {}
-                for move, action_state in self.ai.search_results.items():
-                    move_cn = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
-                    logger.info(f"move: {move_cn}-{move}, visit count: {action_state[0]}, Q_value: {action_state[1]:.3f}, Prior: {action_state[2]:.3f}")
-                    self.mcts_moves[move_cn] = action_state
-                x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
-                chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
-                sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
-                if sprite_dest:
-                    self.chessmans.remove(sprite_dest)
-                    sprite_dest.kill()
-                chessman_sprite.move(x1, y1, self.chessman_w, self.chessman_h)
-                self.history.append(self.env.get_state())
+                cont = self.actual_ai_move()
+                if not cont:
+                    break
+
+                # actual ai move
+                # labels = ActionLabelsRed
+                # labels_n = len(ActionLabelsRed)
+                # self.ai.search_results = {}
+                # state = self.env.get_state()
+                # logger.info(f"state = {state}")
+                # _, _, _, check = senv.done(state, need_check=True)
+                # if not check and state in self.history[:-1]:
+                #     no_act = []
+                #     free_move = defaultdict(int)
+                #     for i in range(len(self.history) - 1):
+                #         if self.history[i] == state:
+                #             # 如果走了下一步是将军或捉：禁止走那步
+                #             if senv.will_check_or_catch(state, self.history[i+1]):
+                #                 no_act.append(self.history[i + 1])
+                #             # 否则当作闲着处理
+                #             else:
+                #                 free_move[state] += 1
+                #                 if free_move[state] >= 2:
+                #                     # 作和棋处理
+                #                     self.env.winner = Winner.draw
+                #                     self.env.board.winner = Winner.draw
+                #                     break
+                #     if no_act:
+                #         logger.debug(f"no_act = {no_act}")
+                # action, policy = self.ai.action(state, self.env.num_halfmoves, no_act)
+                # if action is None:
+                #     logger.info("AI has resigned!")
+                #     return
+                # self.history.append(action)
+                # if not self.env.red_to_move:
+                #     action = flip_move(action)
+                # key = self.env.get_state()
+                # p, v = self.ai.debug[key]
+                # logger.info(f"check = {check}, NN value = {v:.3f}")
+                # self.nn_value = v
+                # logger.info("MCTS results:")
+                # self.mcts_moves = {}
+                # for move, action_state in self.ai.search_results.items():
+                #     move_cn = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+                #     logger.info(f"move: {move_cn}-{move}, visit count: {action_state[0]}, Q_value: {action_state[1]:.3f}, Prior: {action_state[2]:.3f}")
+                #     self.mcts_moves[move_cn] = action_state
+                # x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
+                # chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
+                # sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
+                # if sprite_dest:
+                #     self.chessmans.remove(sprite_dest)
+                #     sprite_dest.kill()
+                # chessman_sprite.move(x1, y1, self.chessman_w, self.chessman_h)
+                # self.history.append(self.env.get_state())
+
+
+
+    def actual_ai_move(self, no_act=None):
+        # actual ai move
+        print('here')
+        labels = ActionLabelsRed
+        labels_n = len(ActionLabelsRed)
+        self.ai.search_results = {}
+        state = self.env.get_state()
+        logger.info(f"state = {state}")
+        _, _, _, check = senv.done(state, need_check=True)
+        if not check and state in self.history[:-1]:
+            no_act = []
+            free_move = defaultdict(int)
+            for i in range(len(self.history) - 1):
+                if self.history[i] == state:
+                    # 如果走了下一步是将军或捉：禁止走那步
+                    if senv.will_check_or_catch(state, self.history[i+1]):
+                        no_act.append(self.history[i + 1])
+                    # 否则当作闲着处理
+                    else:
+                        free_move[state] += 1
+                        if free_move[state] >= 2:
+                            # 作和棋处理
+                            self.env.winner = Winner.draw
+                            self.env.board.winner = Winner.draw
+                            return False
+            if no_act:
+                logger.debug(f"no_act = {no_act}")
+        action, policy = self.ai.action(state, self.env.num_halfmoves, no_act)
+        if action is None:
+            logger.info("AI has resigned!")
+            return False
+        self.history.append(action)
+        if not self.env.red_to_move:
+            action = flip_move(action)
+        key = self.env.get_state()
+        p, v = self.ai.debug[key]
+        logger.info(f"check = {check}, NN value = {v:.3f}")
+        self.nn_value = v
+        logger.info("MCTS results:")
+        self.mcts_moves = {}
+        for move, action_state in self.ai.search_results.items():
+            move_cn = self.env.board.make_single_record(int(move[0]), int(move[1]), int(move[2]), int(move[3]))
+            logger.info(f"move: {move_cn}-{move}, visit count: {action_state[0]}, Q_value: {action_state[1]:.3f}, Prior: {action_state[2]:.3f}")
+            self.mcts_moves[move_cn] = action_state
+        x0, y0, x1, y1 = int(action[0]), int(action[1]), int(action[2]), int(action[3])
+        chessman_sprite = select_sprite_from_group(self.chessmans, x0, y0)
+        sprite_dest = select_sprite_from_group(self.chessmans, x1, y1)
+        if sprite_dest:
+            self.chessmans.remove(sprite_dest)
+            sprite_dest.kill()
+        chessman_sprite.move(x1, y1, self.chessman_w, self.chessman_h)
+        self.history.append(self.env.get_state())
+        return True
+
+
+
+
 
     def draw_widget(self, screen, widget_background):
         white_rect = Rect(0, 0, self.screen_width - self.width, self.height)
