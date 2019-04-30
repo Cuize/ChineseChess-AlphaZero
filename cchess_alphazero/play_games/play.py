@@ -254,7 +254,6 @@ class PlayWithHuman:
 
     def actual_ai_move(self, no_act=None):
         # actual ai move
-        print('here')
         labels = ActionLabelsRed
         labels_n = len(ActionLabelsRed)
         self.ai.search_results = {}

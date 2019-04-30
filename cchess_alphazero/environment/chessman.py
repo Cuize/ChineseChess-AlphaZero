@@ -87,7 +87,7 @@ class Chessman(object):
             self.__position.y = row_num
             self.__chessboard.add_chessman(self, col_num, row_num)
         else:
-            print("the worng postion")
+            print("the wrong postion")
 
     def move(self, col_num, row_num):
         if self.in_moving_list(col_num, row_num):
