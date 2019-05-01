@@ -31,6 +31,7 @@ def create_parser():
     parser.add_argument("--distributed", help="whether upload/download file from remote server", action="store_true")
     parser.add_argument("--elo", help="whether to compute elo score", action="store_true")
     parser.add_argument("--flipped", help="play red or black", default=0, type=int)
+    parser.add_argument("--red_turn", help="red play first?", default=1, type=int)
     return parser
 
 def setup(config: Config, args):
@@ -126,6 +127,6 @@ def start():
         pwhc.update_play_config(config.play)
         from cchess_alphazero.play_games import assist
         # print(f'flipped: {args.flipped}')
-        assist.main(config,args.flipped)
+        assist.main(config,args.red_turn,args.flipped)
 
         

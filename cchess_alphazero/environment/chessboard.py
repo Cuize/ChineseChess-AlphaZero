@@ -9,9 +9,9 @@ logger = getLogger(__name__)
 
 class Chessboard(object):
 
-    def __init__(self, name='000'):
+    def __init__(self, red_turn=1, name='000'):
         self.__name = name
-        self.__is_red_turn = True
+        self.__is_red_turn = red_turn
         self.__chessmans = [([None] * 10) for i in range(9)]
         self.__chessmans_hash = {}
         self.turns = 1

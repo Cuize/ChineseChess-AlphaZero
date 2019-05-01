@@ -133,10 +133,10 @@ def translate_hit_area(screen_x, screen_y, w=57, h=57):
     return screen_x // 57, 9 - screen_y // 57
 
 
-def main(config: Config,flipped=0,winstyle=0):
+def main(config: Config,red_turn=1,flipped=0,winstyle=0):
     # print(f'flipped : {flipped}')
     AI = play.PlayWithHuman(config)
-    AI.env.reset(flipped,None)
+    AI.env.reset(red_turn,flipped,None)
     AI.load_model()
     AI.pipe = AI.model.get_pipes()
     AI.ai = CChessPlayer(AI.config, search_tree=defaultdict(VisitState), pipes=AI.pipe,
@@ -280,4 +280,4 @@ if __name__ == '__main__':
     print('/n')
     print('here')
     print('/n')
-    main(Config,0,0)
+    main(Config,1,0,0)
